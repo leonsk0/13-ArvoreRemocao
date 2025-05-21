@@ -257,11 +257,21 @@ NO* insereArvore(NO* no, int valor) {
     return balancearNo(no);
 }
 
+// Função auxiliar: retorna o nó de menor valor em uma subárvore
+NO* encontraMenor(NO* no) {
+    NO* atual = no;
+    while (atual->esq != NULL)
+        atual = atual->esq;
+    return atual;
+}
+
 NO* removerArvore(NO* no, int valor) {
     if (no == NULL) {
         cout << "Elemento NAO encontrado.\n";
         return no;
     }
+
+    // 1) Desce na árvore para encontrar o nó a remover
     if (valor < no->valor) {
         no->esq = removerArvore(no->esq, valor);
     }
@@ -269,21 +279,40 @@ NO* removerArvore(NO* no, int valor) {
         no->dir = removerArvore(no->dir, valor);
     }
     else {
-                
-        // Caso 1: Nó sem filhos
-        // Se o nó não possui filhos (esquerda e direita são NULL), basta removê-lo e retornar NULL para o pai.
+        // 2) Achou o nó a ser removido
 
-        // Caso 2: Nó com apenas um filho
-        // Se o nó possui apenas um filho (esquerda ou direita), retorna o ponteiro para esse filho, liberando o nó atual.
-
-        // Caso 3: Nó com dois filhos
-        // Se o nó possui dois filhos, encontra o sucessor (menor valor da subárvore direita),
-        // copia o valor do sucessor para o nó atual e remove recursivamente o sucessor.
+        // Caso 1: nó sem filhos
+        if (no->esq == NULL && no->dir == NULL) {
+            free(no);
+            return NULL;
+        }
+        // Caso 2: nó com apenas um filho
+        else if (no->esq == NULL) {
+            NO* temp = no->dir;
+            free(no);
+            return temp;
+        }
+        else if (no->dir == NULL) {
+            NO* temp = no->esq;
+            free(no);
+            return temp;
+        }
+        // Caso 3: nó com dois filhos
+        else {
+            // Encontra o sucessor (menor da subárvore direita)
+            NO* suc = encontraMenor(no->dir);
+            // Copia o valor do sucessor para o nó atual
+            no->valor = suc->valor;
+            // Remove recursivamente o sucessor
+            no->dir = removerArvore(no->dir, suc->valor);
+        }
     }
-    // Atualiza altura e balanceia
+
+    // 3) Atualiza altura e rebalanceia
     no->altura = maior(alturaNo(no->esq), alturaNo(no->dir)) + 1;
     return balancearNo(no);
 }
+
 
 // ---------- Utilidades ----------
 int elementosArvore(NO* no) {
